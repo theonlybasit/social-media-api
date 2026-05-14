@@ -11,6 +11,11 @@ connectDB()
 
 app.use('/posts', postRoute)
 
+
+app.get('/health', (req,res) => {
+    res.status(200).json({message: "OK", timestamp: Date.now()})
+})
+
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
