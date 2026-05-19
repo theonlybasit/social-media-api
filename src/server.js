@@ -17,7 +17,7 @@ const corsOptions = {
         if (allowedOrigins.includes(origin)) {
             return callback (null, true);
         } else {
-            return callback (new Error('Blocked by CORS. Origin not allowed'));
+            return callback (null, false);
         }
     },
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
