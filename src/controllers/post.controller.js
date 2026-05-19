@@ -69,7 +69,7 @@ async function getAllPosts(req, res) {
     .limit(limit)
     .lean();
 
-    return res.status(201).json({ message: "Success",count: posts.length, data: posts });
+    return res.status(200).json({ message: "Success",count: posts.length, data: posts });
   } catch (error) {
     console.error(`Error fetching all posts: ${error}`);
 
