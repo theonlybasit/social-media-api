@@ -1,9 +1,10 @@
 const Post = require("../models/post.model.js");
+const supabase = require("../config/supabase.js");
 
 async function createPost(req, res) {
   try {
-    const { author, caption, imageUrl } = req.body;
-
+    const { author, caption } = req.body;
+    let imageUrl = req.body.imageUrl || null;
     const cleanedCaption = caption?.trim();
 
     if (!cleanedCaption && !imageUrl) {
@@ -18,6 +19,29 @@ async function createPost(req, res) {
 
     if (!author) {
       return res.status(400).json({ message: "You must have an account" });
+    }
+
+    if (req.file) {
+      const file = req.file;
+      const fileExt = file.originalname.split(".").pop();
+      const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from(process.env.SUPABASE_BUCKET_NAME)
+        .upload(uniqueFileName, file.buffer, {
+          contentType: file.mimetype,
+          cacheControl: "3600",
+          upsert: false,
+        });
+      if (error) {
+        throw new Error(`Supabase Storage upload error: ${error.message}`);
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from(process.env.SUPABASE_BUCKET_NAME)
+        .getPublicUrl(uniqueFileName);
+      imageUrl = publicUrlData.publicUrl;
+
     }
 
     const newPost = {
@@ -58,18 +82,19 @@ async function getSinglePost(req, res) {
 
 async function getAllPosts(req, res) {
   try {
-    const page = parseInt(req.query.page)  || 1;
+    const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-
     const posts = await Post.find()
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
-    return res.status(200).json({ message: "Success",count: posts.length, data: posts });
+    return res
+      .status(200)
+      .json({ message: "Success", count: posts.length, data: posts });
   } catch (error) {
     console.error(`Error fetching all posts: ${error}`);
 

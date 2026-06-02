@@ -1,8 +1,8 @@
 const express = require('express')
 
 const {createPost, getSinglePost, getAllPosts, updatePost, deletePost } = require('../controllers/post.controller')
-const validateObjectId = require('../../middleware/validateobjectId')
-
+const validateObjectId = require('../middleware/validateobjectId')
+const upload = require('../middleware/upload')
 
 const router = express.Router()
 
@@ -13,7 +13,7 @@ router.get('/', getAllPosts)
 router.get('/:id',validateObjectId, getSinglePost)
 
 // CREATE A POST
-router.post('/', createPost)
+router.post('/', upload.single("imageUrl"), createPost)
 
 
 // UPDATE POST
