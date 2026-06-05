@@ -35,7 +35,8 @@ async function createPost(req, res) {
           upsert: false,
         });
       if (error) {
-        throw new Error(`Supabase Storage upload error: ${error.message}`);
+        console.error(error)
+        throw new Error(`Upload failed`);
       }
 
       const { data: publicUrlData } = supabase.storage
