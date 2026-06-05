@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
+const blacklist = require("../config/tokenBlacklist");
 
 const SALT_ROUNDS = 10;
 
@@ -70,11 +71,9 @@ async function login(req, res) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign(
-      { userId: user._id},
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" },
-    );
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
     return res.status(200).json({
       message: "Login successful",
@@ -88,7 +87,28 @@ async function login(req, res) {
   }
 }
 
+// LOG OUT
+
+async function logout(req, res) {
+  try {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader.split(" ")[1];
+
+    blacklist.add(token);
+
+    return res.status(200).json({
+      message: "Successfully logged out",
+    });
+  } catch (error) {
+    console.error(`Logout error: ${error}`);
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
+}
+
 module.exports = {
   signup,
   login,
+  logout
 };
