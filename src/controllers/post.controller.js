@@ -3,7 +3,8 @@ const supabase = require("../config/supabase.js");
 
 async function createPost(req, res) {
   try {
-    const { author, caption } = req.body;
+    const author = req.user.userId
+    const { caption } = req.body;
     let imageUrl = req.body.imageUrl || null;
     const cleanedCaption = caption?.trim();
 
