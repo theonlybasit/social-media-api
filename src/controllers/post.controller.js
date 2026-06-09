@@ -57,9 +57,9 @@ async function createPost(req, res) {
       .status(201)
       .json({ message: "Post created successfully", data: post });
   } catch (error) {
+    console.error(error)
     return res.status(500).json({
-      message: "The server is currently down, try again",
-      error: error.message,
+      message: "There was an error creating the post. please try again", 
     });
   }
 }
@@ -140,10 +140,16 @@ async function updatePost(req, res) {
       updatePost.imageUrl = imageUrl || "";
     }
     const updatedPost = await updatePost.save();
-
+    
+    if (post.author.toString() !== req.user.userId) {
+     return res.status(403).json({
+       message: 'You are not authorized to perform this action'
+     })
+    } 
     return res
       .status(200)
       .json({ message: "Post updated successfully", data: updatePost });
+
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }
@@ -158,6 +164,12 @@ async function deletePost(req, res) {
     if (!deletePost) {
       return res.status(404).json({ message: "Post not found" });
     }
+
+       if (post.author.toString() !== req.user.userId) {
+     return res.status(403).json({
+       message: 'You are not authorized to perform this action'
+     })
+    } 
 
     return res
       .status(200)
